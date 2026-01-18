@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        .btn { padding: 10px 20px; margin: 10px; font-size: 18px; }
+        .quantity { font-size: 24px; margin: 0 20px; }
+    </style>
+</head>
+<body>
+    <h1>Button Test</h1>
+    
+    <div>
+        <button class="btn" onclick="testClick()">Test Click</button>
+        <button class="btn" onclick="updateQty(-1)">-</button>
+        <span class="quantity" id="qty">0</span>
+        <button class="btn" onclick="updateQty(1)">+</button>
+    </div>
+
+    <script>
+        let quantity = 0;
+        
+        function testClick() {
+            alert('Button clicked!');
+            console.log('Test button clicked');
+        }
+        
+        function updateQty(change) {
+            quantity += change;
+            if (quantity < 0) quantity = 0;
+            document.getElementById('qty').textContent = quantity;
+            console.log('Quantity updated to:', quantity);
+            alert('Quantity: ' + quantity);
+        }
+        
+        console.log('Script loaded');
+    </script>
+</body>
+</html>

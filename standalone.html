@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥚 Egg Ordering Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            line-height: 1.4;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        header {
+            padding: 20px 16px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        header h1 { font-size: 24px; margin-bottom: 8px; }
+        header p { font-size: 14px; opacity: 0.9; }
+        main { flex: 1; padding: 20px 16px 100px; }
+        .products-grid { display: grid; gap: 16px; }
+        .product-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+        }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .product-image { font-size: 40px; min-width: 60px; text-align: center; }
+        .product-card h3 { font-size: 18px; margin-bottom: 4px; }
+        .product-card p { font-size: 14px; color: #757575; margin-bottom: 8px; }
+        .price { font-size: 16px; font-weight: 600; color: #007aff; margin-bottom: 12px; }
+        .quantity-controls { display: flex; align-items: center; gap: 12px; }
+        .btn-quantity {
+            width: 32px; height: 32px;
+            border: 1px solid #007aff;
+            background: transparent;
+            color: #007aff;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-quantity:hover { background: #007aff; color: white; }
+        .btn-quantity:active { transform: scale(0.95); }
+        .quantity { min-width: 24px; text-align: center; font-size: 16px; font-weight: 600; }
+        footer {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; border-top: 1px solid #e0e0e0;
+            padding: 16px; z-index: 100;
+        }
+        .cart-summary {
+            max-width: 480px; margin: 0 auto;
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 16px;
+        }
+        .cart-info { display: flex; flex-direction: column; gap: 4px; }
+        .cart-count { font-size: 14px; color: #757575; }
+        .cart-total { font-size: 18px; font-weight: 600; }
+        .checkout-btn {
+            background: #007aff; color: white;
+            border: none; border-radius: 12px;
+            padding: 12px 24px; font-size: 16px;
+            font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease; min-width: 120px;
+        }
+        .checkout-btn:hover:not(:disabled) { transform: translateY(-1px); }
+        .checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .success-message {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #28a745; color: white;
+            padding: 20px; border-radius: 12px;
+            font-size: 16px; text-align: center;
+            z-index: 1000; display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🥚 Fresh Eggs Delivery</h1>
+            <p>Order fresh eggs directly to your door!</p>
+        </header>
+
+        <main>
+            <div class="products-grid">
+                <div class="product-card">
+                    <div class="product-image">🥚</div>
+                    <div style="flex: 1;">
+                        <h3>White Eggs</h3>
+                        <p>Farm fresh white eggs (12 pack)</p>
+                        <div class="price">$4.99</div>
+                        <div class="quantity-controls">
+                            <button class="btn-quantity" onclick="updateQuantity('white-eggs', -1)">-</button>
+                            <span class="quantity" id="qty-white-eggs">0</span>
+                            <button class="btn-quantity" onclick="updateQuantity('white-eggs', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-image">🥚</div>
+                    <div style="flex: 1;">
+                        <h3>Brown Eggs</h3>
+                        <p>Organic brown eggs (12 pack)</p>
+                        <div class="price">$6.99</div>
+                        <div class="quantity-controls">
+                            <button class="btn-quantity" onclick="updateQuantity('brown-eggs', -1)">-</button>
+                            <span class="quantity" id="qty-brown-eggs">0</span>
+                            <button class="btn-quantity" onclick="updateQuantity('brown-eggs', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-image">🥚</div>
+                    <div style="flex: 1;">
+                        <h3>Duck Eggs</h3>
+                        <p>Premium duck eggs (6 pack)</p>
+                        <div class="price">$8.99</div>
+                        <div class="quantity-controls">
+                            <button class="btn-quantity" onclick="updateQuantity('duck-eggs', -1)">-</button>
+                            <span class="quantity" id="qty-duck-eggs">0</span>
+                            <button class="btn-quantity" onclick="updateQuantity('duck-eggs', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-image">🥚</div>
+                    <div style="flex: 1;">
+                        <h3>Quail Eggs</h3>
+                        <p>Delicate quail eggs (18 pack)</p>
+                        <div class="price">$12.99</div>
+                        <div class="quantity-controls">
+                            <button class="btn-quantity" onclick="updateQuantity('quail-eggs', -1)">-</button>
+                            <span class="quantity" id="qty-quail-eggs">0</span>
+                            <button class="btn-quantity" onclick="updateQuantity('quail-eggs', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="cart-summary">
+                <div class="cart-info">
+                    <span class="cart-count">0 items</span>
+                    <span class="cart-total">$0.00</span>
+                </div>
+                <button id="checkout-btn" class="checkout-btn" onclick="checkout()" disabled>
+                    Place Order
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <div class="success-message" id="success-message">
+        🎉 Order placed successfully!<br>
+        Check your Telegram for confirmation.
+    </div>
+
+    <script>
+        // Product data and cart
+        const products = {
+            'white-eggs': { name: 'White Eggs', price: 4.99 },
+            'brown-eggs': { name: 'Brown Eggs', price: 6.99 },
+            'duck-eggs': { name: 'Duck Eggs', price: 8.99 },
+            'quail-eggs': { name: 'Quail Eggs', price: 12.99 }
+        };
+        let cart = {};
+        
+        // Telegram WebApp
+        const tg = window.Telegram?.WebApp || {
+            ready: () => {},
+            expand: () => {},
+            showAlert: alert,
+            close: () => window.close(),
+            initDataUnsafe: { user: { id: 'demo', username: 'demo_user' } }
+        };
+
+        function updateQuantity(productId, change) {
+            if (!cart[productId]) cart[productId] = 0;
+            cart[productId] += change;
+            if (cart[productId] < 0) cart[productId] = 0;
+            if (cart[productId] === 0) delete cart[productId];
+            
+            document.getElementById(`qty-${productId}`).textContent = cart[productId] || 0;
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            const totalPrice = Object.entries(cart).reduce((sum, [productId, qty]) => {
+                return sum + (products[productId].price * qty);
+            }, 0);
+            
+            document.querySelector('.cart-count').textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+            document.querySelector('.cart-total').textContent = `$${totalPrice.toFixed(2)}`;
+            document.getElementById('checkout-btn').disabled = totalItems === 0;
+        }
+
+        async function checkout() {
+            const orderData = {
+                items: Object.entries(cart).map(([productId, quantity]) => ({
+                    id: productId,
+                    name: products[productId].name,
+                    price: products[productId].price,
+                    quantity: quantity,
+                    total: products[productId].price * quantity
+                })),
+                total: Object.entries(cart).reduce((sum, [productId, qty]) => {
+                    return sum + (products[productId].price * qty);
+                }, 0),
+                user: tg.initDataUnsafe?.user || { id: 'demo', username: 'demo' }
+            };
+
+            // Send to your Telegram bot
+            try {
+                const response = await fetch('https://api.telegram.org/bot8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: '5953289675', // Replace with your chat ID
+                        text: `🥚 NEW ORDER!\n\nItems:\n${orderData.items.map(item => `• ${item.quantity}x ${item.name} - $${item.total.toFixed(2)}`).join('\n')}\n\n💰 Total: $${orderData.total.toFixed(2)}\n👤 User: ${orderData.user.username || orderData.user.id}`
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('success-message').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('success-message').style.display = 'none';
+                        cart = {};
+                        Object.keys(products).forEach(productId => {
+                            document.getElementById(`qty-${productId}`).textContent = '0';
+                        });
+                        updateCartDisplay();
+                    }, 2000);
+                } else {
+                    alert('Order failed. Please try again.');
+                }
+            } catch (error) {
+                alert('Network error. Please check your connection.');
+            }
+        }
+
+        // Initialize
+        tg.ready();
+        tg.expand();
+        updateCartDisplay();
+    </script>
+</body>
+</html>
