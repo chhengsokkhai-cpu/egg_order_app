@@ -10,7 +10,39 @@ const products = {
 let cart = {};
 
 // Telegram Web App initialization
-let tg = window.Telegram.WebApp;
+let tg = window.Telegram?.WebApp || {
+    // Fallback for testing outside Telegram
+    ready: () => console.log('TG ready (fallback)'),
+    expand: () => console.log('TG expand (fallback)'),
+    MainButton: {
+        setText: (text) => console.log('MainButton setText:', text),
+        show: () => console.log('MainButton show'),
+        hide: () => console.log('MainButton hide'),
+        onClick: (callback) => console.log('MainButton onClick set'),
+        showProgress: () => console.log('MainButton showProgress'),
+        hideProgress: () => console.log('MainButton hideProgress')
+    },
+    BackButton: {
+        show: () => console.log('BackButton show'),
+        hide: () => console.log('BackButton hide'),
+        onClick: (callback) => console.log('BackButton onClick set')
+    },
+    HapticFeedback: {
+        impactOccurred: (type) => console.log('Haptic feedback:', type)
+    },
+    showAlert: (message) => alert(message),
+    showConfirm: (message, callback) => {
+        const result = confirm(message);
+        callback(result);
+    },
+    close: () => console.log('TG close'),
+    sendData: (data) => console.log('TG sendData:', data),
+    onEvent: (event, callback) => console.log('TG onEvent:', event),
+    colorScheme: 'light',
+    themeParams: {},
+    isExpanded: false,
+    initDataUnsafe: { user: { id: 'test', username: 'test', first_name: 'Test' } }
+};
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
@@ -35,8 +67,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize cart display
     updateCartDisplay();
     
+    // Add event listeners for quantity buttons as fallback
+    setupQuantityButtons();
+    
     console.log('Telegram Mini App initialized');
 });
+
+// Setup quantity buttons with event listeners
+function setupQuantityButtons() {
+    console.log('Setting up quantity buttons');
+    
+    // Get all quantity buttons
+    const quantityButtons = document.querySelectorAll('.btn-quantity');
+    
+    quantityButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Button clicked:', this);
+            
+            // Extract product ID and change from the onclick attribute or data attributes
+            const onclickAttr = this.getAttribute('onclick');
+            if (onclickAttr) {
+                const matches = onclickAttr.match(/updateQuantity\('([^']+)', ([+-]?\d+)\)/);
+                if (matches) {
+                    const productId = matches[1];
+                    const change = parseInt(matches[2]);
+                    console.log('Extracted:', productId, change);
+                    updateQuantity(productId, change);
+                }
+            }
+        });
+    });
+    
+    console.log('Found', quantityButtons.length, 'quantity buttons');
+}
 
 // Set theme based on Telegram's theme
 function setTheme() {
@@ -54,32 +120,41 @@ function setTheme() {
 
 // Update quantity of a product
 function updateQuantity(productId, change) {
-    if (!cart[productId]) {
-        cart[productId] = 0;
-    }
-    
-    cart[productId] += change;
-    
-    // Don't allow negative quantities
-    if (cart[productId] < 0) {
-        cart[productId] = 0;
-    }
-    
-    // Remove from cart if quantity is 0
-    if (cart[productId] === 0) {
-        delete cart[productId];
-    }
-    
-    // Update the display
-    updateQuantityDisplay(productId);
-    updateCartDisplay();
-    
-    // Add animation
-    animateQuantityChange(productId);
-    
-    // Haptic feedback
-    if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
+    try {
+        console.log('updateQuantity called:', productId, change);
+        
+        if (!cart[productId]) {
+            cart[productId] = 0;
+        }
+        
+        cart[productId] += change;
+        
+        // Don't allow negative quantities
+        if (cart[productId] < 0) {
+            cart[productId] = 0;
+        }
+        
+        // Remove from cart if quantity is 0
+        if (cart[productId] === 0) {
+            delete cart[productId];
+        }
+        
+        console.log('Cart after update:', cart);
+        
+        // Update the display
+        updateQuantityDisplay(productId);
+        updateCartDisplay();
+        
+        // Add animation
+        animateQuantityChange(productId);
+        
+        // Haptic feedback
+        if (tg.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    } catch (error) {
+        console.error('Error in updateQuantity:', error);
+        alert('Error updating quantity: ' + error.message);
     }
 }
 
