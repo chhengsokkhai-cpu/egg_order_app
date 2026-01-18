@@ -12,6 +12,9 @@ body {
     line-height: 1.4;
     -webkit-user-select: none;
     user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
 
 .container {
@@ -119,6 +122,11 @@ main {
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .btn-quantity:hover {
