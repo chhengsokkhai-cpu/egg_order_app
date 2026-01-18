@@ -11,8 +11,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '/')));
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // In-memory storage for orders (use a database in production)
 let orders = [];
@@ -20,7 +20,7 @@ let orderIdCounter = 1000;
 
 // Routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // API endpoint for placing orders
