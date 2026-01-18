@@ -22,9 +22,9 @@
                     <p>Farm fresh white eggs (12 pack)</p>
                     <div class="price">$4.99</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('white-eggs', -1)">-</button>
+                        <button class="btn-quantity" data-product="white-eggs" data-change="-1">-</button>
                         <span class="quantity" id="qty-white-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('white-eggs', 1)">+</button>
+                        <button class="btn-quantity" data-product="white-eggs" data-change="1">+</button>
                     </div>
                 </div>
 
@@ -34,9 +34,9 @@
                     <p>Organic brown eggs (12 pack)</p>
                     <div class="price">$6.99</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('brown-eggs', -1)">-</button>
+                        <button class="btn-quantity" data-product="brown-eggs" data-change="-1">-</button>
                         <span class="quantity" id="qty-brown-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('brown-eggs', 1)">+</button>
+                        <button class="btn-quantity" data-product="brown-eggs" data-change="1">+</button>
                     </div>
                 </div>
 
@@ -46,9 +46,9 @@
                     <p>Premium duck eggs (6 pack)</p>
                     <div class="price">$8.99</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('duck-eggs', -1)">-</button>
+                        <button class="btn-quantity" data-product="duck-eggs" data-change="-1">-</button>
                         <span class="quantity" id="qty-duck-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('duck-eggs', 1)">+</button>
+                        <button class="btn-quantity" data-product="duck-eggs" data-change="1">+</button>
                     </div>
                 </div>
 
@@ -58,9 +58,9 @@
                     <p>Delicate quail eggs (18 pack)</p>
                     <div class="price">$12.99</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('quail-eggs', -1)">-</button>
+                        <button class="btn-quantity" data-product="quail-eggs" data-change="-1">-</button>
                         <span class="quantity" id="qty-quail-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('quail-eggs', 1)">+</button>
+                        <button class="btn-quantity" data-product="quail-eggs" data-change="1">+</button>
                     </div>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                     <span class="cart-count">0 items</span>
                     <span class="cart-total">$0.00</span>
                 </div>
-                <button id="checkout-btn" class="checkout-btn" onclick="checkout()" disabled>
+                <button id="checkout-btn" class="checkout-btn" disabled>
                     Place Order
                 </button>
             </div>

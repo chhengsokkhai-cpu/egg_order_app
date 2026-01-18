@@ -87,19 +87,31 @@ function setupQuantityButtons() {
             
             console.log('Button clicked:', this);
             
-            // Extract product ID and change from the onclick attribute or data attributes
-            const onclickAttr = this.getAttribute('onclick');
-            if (onclickAttr) {
-                const matches = onclickAttr.match(/updateQuantity\('([^']+)', ([+-]?\d+)\)/);
-                if (matches) {
-                    const productId = matches[1];
-                    const change = parseInt(matches[2]);
-                    console.log('Extracted:', productId, change);
-                    updateQuantity(productId, change);
-                }
+            // Add visual feedback
+            this.classList.add('clicked');
+            setTimeout(() => {
+                this.classList.remove('clicked');
+            }, 200);
+            
+            // Get product ID and change from data attributes
+            const productId = this.getAttribute('data-product');
+            const change = parseInt(this.getAttribute('data-change'));
+            
+            console.log('Data attributes:', productId, change);
+            
+            if (productId && !isNaN(change)) {
+                updateQuantity(productId, change);
+            } else {
+                console.error('Missing or invalid data attributes');
             }
         });
     });
+    
+    // Also setup checkout button
+    const checkoutBtn = document.getElementById('checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', checkout);
+    }
     
     console.log('Found', quantityButtons.length, 'quantity buttons');
 }

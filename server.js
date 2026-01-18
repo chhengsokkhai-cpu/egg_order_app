@@ -73,10 +73,9 @@ app.post('/api/orders', (req, res) => {
         // 3. Send confirmation email/SMS
         // 4. Update inventory
         
-        // Simulate processing time
+        // Send notification to Telegram bot
         setTimeout(() => {
-            // You could send a webhook to Telegram bot here
-            // notifyTelegramBot(order);
+            notifyTelegramBot(order);
         }, 100);
         
         res.json({
@@ -174,6 +173,19 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Endpoint to get chat updates (to find your chat ID)
+app.get('/api/get-chat-id', async (req, res) => {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates`);
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -191,23 +203,43 @@ app.use('*', (req, res) => {
     });
 });
 
-// Function to notify Telegram bot (implement based on your bot setup)
-function notifyTelegramBot(order) {
-    // Example implementation:
-    // const botToken = process.env.TELEGRAM_BOT_TOKEN;
-    // const chatId = order.user.id;
-    // const message = `Your order ${order.id} has been received! Total: $${order.total.toFixed(2)}`;
-    // 
-    // fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //         chat_id: chatId,
-    //         text: message
-    //     })
-    // });
+// Function to notify Telegram bot
+async function notifyTelegramBot(order) {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    const chatId = order.user.id; // Use the user's chat ID from the order
     
-    console.log('Would notify Telegram bot about order:', order.id);
+    const orderItems = order.items.map(item => 
+        `• ${item.quantity}x ${item.name} - $${item.total.toFixed(2)}`
+    ).join('\n');
+    
+    const message = `🥚 NEW ORDER RECEIVED!\n\n` +
+        `Order ID: ${order.id}\n` +
+        `Customer: ${order.user.username || order.user.first_name || 'Anonymous'}\n` +
+        `User ID: ${order.user.id}\n\n` +
+        `Items:\n${orderItems}\n\n` +
+        `💰 Total: $${order.total.toFixed(2)}\n` +
+        `⏰ Time: ${new Date(order.timestamp).toLocaleString()}`;
+    
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: 'HTML'
+            })
+        });
+        
+        if (response.ok) {
+            console.log('Telegram notification sent successfully');
+        } else {
+            const errorData = await response.json();
+            console.error('Failed to send Telegram notification:', errorData);
+        }
+    } catch (error) {
+        console.error('Error sending Telegram notification:', error);
+    }
 }
 
 // Start server
