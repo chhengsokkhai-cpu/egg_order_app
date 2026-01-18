@@ -9,40 +9,124 @@ const products = {
 // Cart state
 let cart = {};
 
+// Update quantity of a product - MOVED TO TOP FOR ONCLICK HANDLERS
+function updateQuantity(productId, change) {
+    try {
+        console.log('updateQuantity called:', productId, change);
+        
+        if (!cart[productId]) {
+            cart[productId] = 0;
+        }
+        
+        cart[productId] += change;
+        
+        // Don't allow negative quantities
+        if (cart[productId] < 0) {
+            cart[productId] = 0;
+        }
+        
+        // Remove from cart if quantity is 0
+        if (cart[productId] === 0) {
+            delete cart[productId];
+        }
+        
+        console.log('Cart after update:', cart);
+        
+        // Update the display
+        updateQuantityDisplay(productId);
+        updateCartDisplay();
+        
+        // Add animation
+        animateQuantityChange(productId);
+        
+        // Haptic feedback
+        if (tg && tg.HapticFeedback) {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    } catch (error) {
+        console.error('Error in updateQuantity:', error);
+        alert('Error updating quantity: ' + error.message);
+    }
+}
+
+// Checkout function - MOVED TO TOP FOR ONCLICK HANDLERS
+function checkout() {
+    console.log('Checkout called');
+    alert('Checkout function called! Cart: ' + JSON.stringify(cart));
+    // Rest of checkout logic will be added after testing
+}
+
+// Update quantity display for a specific product
+function updateQuantityDisplay(productId) {
+    const quantityElement = document.getElementById(`qty-${productId}`);
+    if (quantityElement) {
+        quantityElement.textContent = cart[productId] || 0;
+    }
+}
+
+// Animate quantity changes
+function animateQuantityChange(productId) {
+    const quantityElement = document.getElementById(`qty-${productId}`);
+    if (quantityElement) {
+        quantityElement.classList.add('updated');
+        setTimeout(() => {
+            quantityElement.classList.remove('updated');
+        }, 300);
+    }
+}
+
+// Update cart display in footer
+function updateCartDisplay() {
+    const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+    const cartTotal = Object.entries(cart).reduce((sum, [productId, qty]) => {
+        return sum + (products[productId].price * qty);
+    }, 0);
+    
+    // Update cart info
+    const cartCountElement = document.querySelector('.cart-count');
+    const cartTotalElement = document.querySelector('.cart-total');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    
+    if (cartCountElement) {
+        cartCountElement.textContent = `${cartCount} item${cartCount !== 1 ? 's' : ''}`;
+    }
+    
+    if (cartTotalElement) {
+        cartTotalElement.textContent = `$${cartTotal.toFixed(2)}`;
+    }
+    
+    // Enable/disable checkout button
+    if (checkoutBtn) {
+        checkoutBtn.disabled = cartCount === 0;
+    }
+}
+
+// Make functions globally available
+window.updateQuantity = updateQuantity;
+window.checkout = checkout;
+
 // Telegram Web App initialization
 let tg = window.Telegram?.WebApp || {
-    // Fallback for testing outside Telegram
-    ready: () => console.log('TG ready (fallback)'),
-    expand: () => console.log('TG expand (fallback)'),
-    MainButton: {
-        setText: (text) => console.log('MainButton setText:', text),
-        show: () => console.log('MainButton show'),
-        hide: () => console.log('MainButton hide'),
-        onClick: (callback) => console.log('MainButton onClick set'),
-        showProgress: () => console.log('MainButton showProgress'),
-        hideProgress: () => console.log('MainButton hideProgress')
-    },
-    BackButton: {
-        show: () => console.log('BackButton show'),
-        hide: () => console.log('BackButton hide'),
-        onClick: (callback) => console.log('BackButton onClick set')
-    },
-    HapticFeedback: {
-        impactOccurred: (type) => console.log('Haptic feedback:', type)
-    },
-    showAlert: (message) => alert(message),
-    showConfirm: (message, callback) => {
-        const result = confirm(message);
-        callback(result);
-    },
-    close: () => console.log('TG close'),
-    sendData: (data) => console.log('TG sendData:', data),
-    onEvent: (event, callback) => console.log('TG onEvent:', event),
-    colorScheme: 'light',
-    themeParams: {},
-    isExpanded: false,
-    initDataUnsafe: { user: { id: 'test', username: 'test', first_name: 'Test' } }
+    HapticFeedback: { impactOccurred: () => {} },
+    showAlert: alert,
+    initDataUnsafe: { user: { id: 'test', username: 'test' } }
 };
+
+// Initialize the app when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing...');
+    updateCartDisplay();
+    
+    // Test that functions are available
+    console.log('updateQuantity function:', typeof updateQuantity);
+    console.log('checkout function:', typeof checkout);
+    
+    // Initialize Telegram Web App if available
+    if (window.Telegram?.WebApp) {
+        tg.ready();
+        tg.expand();
+    }
+});
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
