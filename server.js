@@ -167,7 +167,7 @@ app.patch('/api/admin/orders/:orderId', (req, res) => {
 app.post('/api/test-telegram', async (req, res) => {
     try {
         const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
-        const adminChatId = '-5203856050'; // Replace with your group chat ID (negative number for groups)
+        const adminChatId = '-3516638177'; // Replace with your group chat ID (negative number for groups)
         
         const testMessage = `🧪 TEST MESSAGE\n\nThis is a test to verify Telegram bot can send to group.\nTime: ${new Date().toISOString()}\nChat ID: ${adminChatId}`;
         
@@ -239,7 +239,7 @@ app.use('*', (req, res) => {
 // Function to notify Telegram bot
 async function notifyTelegramBot(order) {
     const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
-    const adminChatId = '-5203856050'; // Replace with your group chat ID (negative number for groups)
+    const adminChatId = '-3516638177'; // Replace with your group chat ID (negative number for groups)
     
     const orderItems = order.items.map(item => 
         `• ${item.quantity}x ${item.name} - ${item.total}`
