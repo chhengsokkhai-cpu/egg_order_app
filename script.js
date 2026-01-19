@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tg.expand();
     
     // Show the main button when cart has items
-    tg.MainButton.setText('PLACE ORDER');
+    tg.MainButton.setText('Order');
     tg.MainButton.hide();
     
     // Handle main button click
