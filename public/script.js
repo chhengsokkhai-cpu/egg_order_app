@@ -54,8 +54,56 @@ function updateQuantity(productId, change) {
 // Checkout function - MOVED TO TOP FOR ONCLICK HANDLERS
 function checkout() {
     console.log('Checkout called');
-    alert('Checkout function called! Cart: ' + JSON.stringify(cart));
-    // Rest of checkout logic will be added after testing
+    
+    if (Object.keys(cart).length === 0) {
+        tg.showAlert('Your cart is empty!');
+        return;
+    }
+    
+    // Prepare order data
+    const items = Object.entries(cart).map(([productId, quantity]) => ({
+        name: products[productId].name,
+        quantity: quantity,
+        total: products[productId].price * quantity
+    }));
+    
+    const total = items.reduce((sum, item) => sum + item.total, 0);
+    
+    const orderData = {
+        items: items,
+        total: total,
+        user: tg.initDataUnsafe?.user || { id: 'test', username: 'test' }
+    };
+    
+    console.log('Sending order:', orderData);
+    
+    // Send order to server
+    fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            tg.showAlert(`Order placed successfully! Order ID: ${data.orderId}`);
+            // Clear cart
+            cart = {};
+            updateCartDisplay();
+            // Reset quantities
+            Object.keys(products).forEach(productId => {
+                updateQuantityDisplay(productId);
+            });
+        } else {
+            tg.showAlert('Failed to place order: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error placing order:', error);
+        tg.showAlert('Error placing order. Please try again.');
+    });
 }
 
 // Update quantity display for a specific product
