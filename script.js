@@ -256,7 +256,7 @@ function updateCartDisplay() {
         
         if (cartCount > 0) {
             tg.MainButton.show();
-            tg.MainButton.setText(`PLACE ORDER - ${cartTotal}`);
+            tg.MainButton.setText(`Order`);
         } else {
             tg.MainButton.hide();
         }
