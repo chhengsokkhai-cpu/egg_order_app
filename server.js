@@ -234,7 +234,7 @@ app.use('*', (req, res) => {
 // Function to notify Telegram bot
 async function notifyTelegramBot(order) {
     const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
-    const adminChatId = '-3104390285'; // Replace with your group chat ID (negative number for groups)
+    const adminChatId = '-5203856050'; // Replace with your group chat ID (negative number for groups)
     
     const orderItems = order.items.map(item => 
         `• ${item.quantity}x ${item.name} - ${item.total}`
