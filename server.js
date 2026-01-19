@@ -169,7 +169,9 @@ app.post('/api/test-telegram', async (req, res) => {
         const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
         const adminChatId = '-5203856050'; // Replace with your group chat ID (negative number for groups)
         
-        const testMessage = `🧪 TEST MESSAGE\n\nThis is a test to verify Telegram bot can send to group.\nTime: ${new Date().toISOString()}`;
+        const testMessage = `🧪 TEST MESSAGE\n\nThis is a test to verify Telegram bot can send to group.\nTime: ${new Date().toISOString()}\nChat ID: ${adminChatId}`;
+        
+        console.log('Sending test message to chat:', adminChatId);
         
         const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
@@ -180,13 +182,16 @@ app.post('/api/test-telegram', async (req, res) => {
             })
         });
         
+        const responseData = await response.json();
+        console.log('Telegram API response:', response.status, responseData);
+        
         if (response.ok) {
-            res.json({ success: true, message: 'Test message sent to Telegram group' });
+            res.json({ success: true, message: 'Test message sent to Telegram group', response: responseData });
         } else {
-            const errorData = await response.json();
-            res.status(500).json({ success: false, error: errorData });
+            res.status(500).json({ success: false, error: responseData });
         }
     } catch (error) {
+        console.error('Error in test endpoint:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -255,8 +260,7 @@ async function notifyTelegramBot(order) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: adminChatId,
-                text: message,
-                parse_mode: 'HTML'
+                text: message
             })
         });
         
