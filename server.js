@@ -206,10 +206,10 @@ app.use('*', (req, res) => {
 // Function to notify Telegram bot
 async function notifyTelegramBot(order) {
     const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
-    const chatId = order.user.id; // Use the user's chat ID from the order
+    const adminChatId = 'YOUR_GROUP_CHAT_ID'; // Replace with your group chat ID (negative number for groups)
     
     const orderItems = order.items.map(item => 
-        `• ${item.quantity}x ${item.name} - $${item.total.toFixed(2)}`
+        `• ${item.quantity}x ${item.name} - ${item.total}`
     ).join('\n');
     
     const message = `🥚 NEW ORDER RECEIVED!\n\n` +
@@ -217,26 +217,39 @@ async function notifyTelegramBot(order) {
         `Customer: ${order.user.username || order.user.first_name || 'Anonymous'}\n` +
         `User ID: ${order.user.id}\n\n` +
         `Items:\n${orderItems}\n\n` +
-        `💰 Total: $${order.total.toFixed(2)}\n` +
+        `💰 Total: ${order.total}\n` +
         `⏰ Time: ${new Date(order.timestamp).toLocaleString()}`;
     
     try {
+        // Send to admin group
         const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                chat_id: chatId,
+                chat_id: adminChatId,
                 text: message,
                 parse_mode: 'HTML'
             })
         });
         
         if (response.ok) {
-            console.log('Telegram notification sent successfully');
+            console.log('Telegram notification sent to admin group successfully');
         } else {
             const errorData = await response.json();
-            console.error('Failed to send Telegram notification:', errorData);
+            console.error('Failed to send Telegram notification to admin:', errorData);
         }
+        
+        // Also send confirmation to customer
+        const customerMessage = `✅ Your order has been placed!\n\nOrder ID: ${order.id}\nTotal: ${order.total}\n\nWe'll notify you when it's ready.`;
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: order.user.id,
+                text: customerMessage
+            })
+        });
+        
     } catch (error) {
         console.error('Error sending Telegram notification:', error);
     }
