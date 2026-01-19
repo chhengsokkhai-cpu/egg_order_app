@@ -3,66 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Egg Ordering Mini App</title>
+    <title>CSP Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🥚 Fresh Eggs Delivery</h1>
-            <p>Order fresh eggs directly to your door!</p>
+            <h1>🥚ឆាយ សុខពៅ </h1>
+            <p>ពងមាន់ខ្មែរចេញពីកសិដ្ឋានផ្ទាល់</p>
         </header>
 
         <main>
             <div class="products-grid">
                 <div class="product-card" data-product="white-eggs">
                     <div class="product-image">🥚</div>
-                    <h3>White Eggs</h3>
-                    <p>Farm fresh white eggs (12 pack)</p>
-                    <div class="price">$4.99</div>
+                    <h3>លេខ 0</h3>
+                    <p>មួយគ្រាប់</p>
+                    <div class="price">400</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('white-eggs', -1)">-</button>
-                        <span class="quantity" id="qty-white-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('white-eggs', 1)">+</button>
+                        <button class="btn-quantity" onclick="updateQuantity('a10', -1)">-</button>
+                        <span class="quantity" id="a10">0</span>
+                        <button class="btn-quantity" onclick="updateQuantity('a10', 1)">+</button>
+                    </div>
+                </div>
+            <div class="products-grid">
+                <div class="product-card" data-product="white-eggs">
+                    <div class="product-image">🥚</div>
+                    <h3>លេខ ១</h3>
+                    <p>មួយគ្រាប់</p>
+                    <div class="price">360</div>
+                    <div class="quantity-controls">
+                        <button class="btn-quantity" onclick="updateQuantity('a11', -1)">-</button>
+                        <span class="quantity" id="a11">0</span>
+                        <button class="btn-quantity" onclick="updateQuantity('a11', 1)">+</button>
                     </div>
                 </div>
 
                 <div class="product-card" data-product="brown-eggs">
                     <div class="product-image">🥚</div>
-                    <h3>Brown Eggs</h3>
-                    <p>Organic brown eggs (12 pack)</p>
-                    <div class="price">$6.99</div>
+                    <h3>លេខ ២</h3>
+                    <p>មួយគ្រាប់</p>
+                    <div class="price">340</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('brown-eggs', -1)">-</button>
-                        <span class="quantity" id="qty-brown-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('brown-eggs', 1)">+</button>
+                        <button class="btn-quantity" onclick="updateQuantity('a12', -1)">-</button>
+                        <span class="quantity" id="a12">0</span>
+                        <button class="btn-quantity" onclick="updateQuantity('a12', 1)">+</button>
                     </div>
                 </div>
 
                 <div class="product-card" data-product="duck-eggs">
                     <div class="product-image">🥚</div>
-                    <h3>Duck Eggs</h3>
-                    <p>Premium duck eggs (6 pack)</p>
-                    <div class="price">$8.99</div>
+                    <h3>លេខ ៣</h3>
+                    <p>មួយគ្រាប់</p>
+                    <div class="price">320</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('duck-eggs', -1)">-</button>
-                        <span class="quantity" id="qty-duck-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('duck-eggs', 1)">+</button>
+                        <button class="btn-quantity" onclick="updateQuantity('a13', -1)">-</button>
+                        <span class="quantity" id="a13">0</span>
+                        <button class="btn-quantity" onclick="updateQuantity('a13', 1)">+</button>
                     </div>
                 </div>
 
                 <div class="product-card" data-product="quail-eggs">
                     <div class="product-image">🥚</div>
-                    <h3>Quail Eggs</h3>
-                    <p>Delicate quail eggs (18 pack)</p>
-                    <div class="price">$12.99</div>
+                    <h3>លេខ ៤</h3>
+                    <p>មួយគ្រាប់</p>
+                    <div class="price">300</div>
                     <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('quail-eggs', -1)">-</button>
-                        <span class="quantity" id="qty-quail-eggs">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('quail-eggs', 1)">+</button>
+                        <button class="btn-quantity" onclick="updateQuantity('a14', -1)">-</button>
+                        <span class="quantity" id="a14">0</span>
+                        <button class="btn-quantity" onclick="updateQuantity('a14', 1)">+</button>
                     </div>
                 </div>
+
+                 <div class="product-card" data-product="quail-eggs">
+                    <div class="product-image">🥚</div>
+                    <h3>លេខ ៥</h3>
+                    <p>មួយគ្រាប់</p>
+                    <div class="price">280</div>
+                    <div class="quantity-controls">
+                        <button class="btn-quantity" onclick="updateQuantity('a15', -1)">-</button>
+                        <span class="quantity" id="a15">0</span>
+                        <button class="btn-quantity" onclick="updateQuantity('a15', 1)">+</button>
+                    </div>
             </div>
         </main>
 

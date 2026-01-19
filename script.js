@@ -1,9 +1,11 @@
 // Product data
 const products = {
-    'white-eggs': { name: 'White Eggs', price: 4.99, description: 'Farm fresh white eggs (12 pack)' },
-    'brown-eggs': { name: 'Brown Eggs', price: 6.99, description: 'Organic brown eggs (12 pack)' },
-    'duck-eggs': { name: 'Duck Eggs', price: 8.99, description: 'Premium duck eggs (6 pack)' },
-    'quail-eggs': { name: 'Quail Eggs', price: 12.99, description: 'Delicate quail eggs (18 pack)' }
+    'a10': { name: 'លេខ 0', price: 400 },
+    'a11': { name: 'លេខ ១', price: 360 },
+    'a12': { name: 'លេខ ២', price: 340 },
+    'a13': { name: 'លេខ ៣', price: 320 },
+    'a14': { name: 'លេខ ៤', price: 300 },
+    'a15': { name: 'លេខ ៥', price: 280 }
 };
 
 // Cart state
@@ -58,7 +60,7 @@ function checkout() {
 
 // Update quantity display for a specific product
 function updateQuantityDisplay(productId) {
-    const quantityElement = document.getElementById(`qty-${productId}`);
+    const quantityElement = document.getElementById(productId);
     if (quantityElement) {
         quantityElement.textContent = cart[productId] || 0;
     }
@@ -66,38 +68,12 @@ function updateQuantityDisplay(productId) {
 
 // Animate quantity changes
 function animateQuantityChange(productId) {
-    const quantityElement = document.getElementById(`qty-${productId}`);
+    const quantityElement = document.getElementById(productId);
     if (quantityElement) {
         quantityElement.classList.add('updated');
         setTimeout(() => {
             quantityElement.classList.remove('updated');
         }, 300);
-    }
-}
-
-// Update cart display in footer
-function updateCartDisplay() {
-    const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-    const cartTotal = Object.entries(cart).reduce((sum, [productId, qty]) => {
-        return sum + (products[productId].price * qty);
-    }, 0);
-    
-    // Update cart info
-    const cartCountElement = document.querySelector('.cart-count');
-    const cartTotalElement = document.querySelector('.cart-total');
-    const checkoutBtn = document.getElementById('checkout-btn');
-    
-    if (cartCountElement) {
-        cartCountElement.textContent = `${cartCount} item${cartCount !== 1 ? 's' : ''}`;
-    }
-    
-    if (cartTotalElement) {
-        cartTotalElement.textContent = `$${cartTotal.toFixed(2)}`;
-    }
-    
-    // Enable/disable checkout button
-    if (checkoutBtn) {
-        checkoutBtn.disabled = cartCount === 0;
     }
 }
 
@@ -254,25 +230,6 @@ function updateQuantity(productId, change) {
     }
 }
 
-// Update quantity display for a specific product
-function updateQuantityDisplay(productId) {
-    const quantityElement = document.getElementById(`qty-${productId}`);
-    if (quantityElement) {
-        quantityElement.textContent = cart[productId] || 0;
-    }
-}
-
-// Animate quantity changes
-function animateQuantityChange(productId) {
-    const quantityElement = document.getElementById(`qty-${productId}`);
-    if (quantityElement) {
-        quantityElement.classList.add('updated');
-        setTimeout(() => {
-            quantityElement.classList.remove('updated');
-        }, 200);
-    }
-}
-
 // Update cart display in footer
 function updateCartDisplay() {
     const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
@@ -290,7 +247,7 @@ function updateCartDisplay() {
     }
     
     if (cartTotalElement) {
-        cartTotalElement.textContent = `$${cartTotal.toFixed(2)}`;
+        cartTotalElement.textContent = `${cartTotal}`;
     }
     
     // Enable/disable checkout button
@@ -299,7 +256,7 @@ function updateCartDisplay() {
         
         if (cartCount > 0) {
             tg.MainButton.show();
-            tg.MainButton.setText(`PLACE ORDER - $${cartTotal.toFixed(2)}`);
+            tg.MainButton.setText(`PLACE ORDER - ${cartTotal}`);
         } else {
             tg.MainButton.hide();
         }
