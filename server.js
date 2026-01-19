@@ -248,6 +248,7 @@ async function notifyTelegramBot(order) {
         `Customer: ${order.user.username || order.user.first_name || 'Anonymous'}\n` +
         `User ID: ${order.user.id}\n\n` +
         `Items:\n${orderItems}\n\n` +
+         `💰 Total: ${order}\n` +
         `⏰ Time: ${new Date(order.timestamp).toLocaleString()}`;
     
     try {
