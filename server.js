@@ -194,6 +194,89 @@ app.post('/api/test-telegram', async (req, res) => {
     }
 });
 
+// Telegram webhook endpoint for handling button clicks
+app.post('/webhook/telegram', async (req, res) => {
+    try {
+        const update = req.body;
+        
+        if (update.callback_query) {
+            const callbackQuery = update.callback_query;
+            const data = callbackQuery.data;
+            const message = callbackQuery.message;
+            
+            // Parse the callback data (format: "action:orderId")
+            const [action, orderId] = data.split(':');
+            
+            const order = orders.find(o => o.id === orderId);
+            if (!order) {
+                await answerCallbackQuery(callbackQuery.id, 'Order not found');
+                return res.sendStatus(200);
+            }
+            
+            if (action === 'accept') {
+                order.status = 'accepted';
+                // Edit the message to show accepted
+                await editMessageText(message.chat.id, message.message_id, 
+                    `✅ ORDER ACCEPTED\n\n${message.text.replace('⏳ PENDING APPROVAL', '✅ ACCEPTED')}`);
+                // Notify customer
+                await sendMessage(order.user.id, `✅ Your order ${orderId} has been accepted! We'll prepare it soon.`);
+            } else if (action === 'deny') {
+                order.status = 'denied';
+                // Edit the message to show denied
+                await editMessageText(message.chat.id, message.message_id, 
+                    `❌ ORDER DENIED\n\n${message.text.replace('⏳ PENDING APPROVAL', '❌ DENIED')}`);
+                // Notify customer
+                await sendMessage(order.user.id, `❌ Sorry, your order ${orderId} could not be accepted at this time.`);
+            }
+            
+            await answerCallbackQuery(callbackQuery.id, `${action === 'accept' ? 'Accepted' : 'Denied'} successfully`);
+        }
+        
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Webhook error:', error);
+        res.sendStatus(500);
+    }
+});
+
+// Helper functions for Telegram API
+async function answerCallbackQuery(callbackQueryId, text) {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            callback_query_id: callbackQueryId,
+            text: text
+        })
+    });
+}
+
+async function editMessageText(chatId, messageId, text) {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    await fetch(`https://api.telegram.org/bot${botToken}/editMessageText`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            message_id: messageId,
+            text: text
+        })
+    });
+}
+
+async function sendMessage(chatId, text) {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: text
+        })
+    });
+}
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({
@@ -243,22 +326,29 @@ async function notifyTelegramBot(order) {
         `• ${item.quantity}x ${item.name} - ${item.total}`
     ).join('\n');
     
-    const message = `🥚 NEW ORDER RECEIVED!\n\n` +
+    const message = `🥚 NEW ORDER RECEIVED!\n⏳ PENDING APPROVAL\n\n` +
         `Order ID: ${order.id}\n` +
         `Customer: ${order.user.username || order.user.first_name || 'Anonymous'}\n` +
         `User ID: ${order.user.id}\n\n` +
         `Items:\n${orderItems}\n\n` +
-         `💰 Total: ${order}\n` +
         `⏰ Time: ${new Date(order.timestamp).toLocaleString()}`;
     
     try {
-        // Send to admin group
+        // Send to admin group with inline keyboard
         const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: adminChatId,
-                text: message
+                text: message,
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '✅ Accept', callback_data: `accept:${order.id}` },
+                            { text: '❌ Deny', callback_data: `deny:${order.id}` }
+                        ]
+                    ]
+                }
             })
         });
         
@@ -285,6 +375,27 @@ async function notifyTelegramBot(order) {
     }
 }
 
+// Setup Telegram webhook
+async function setupWebhook() {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    const webhookUrl = `https://telegram-egg-ordering-mini-app.vercel.app/webhook/telegram`;
+    
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                url: webhookUrl
+            })
+        });
+        
+        const result = await response.json();
+        console.log('Webhook setup result:', result);
+    } catch (error) {
+        console.error('Error setting up webhook:', error);
+    }
+}
+
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
     const localIP = '192.168.1.11'; // Your local IP address
@@ -293,4 +404,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🌐 Access from other devices: http://${localIP}:${PORT}`);
     console.log(`🔧 Admin orders: http://${localIP}:${PORT}/api/admin/orders`);
     console.log(`❤️  Health check: http://${localIP}:${PORT}/health`);
+    
+    // Setup Telegram webhook
+    setupWebhook();
 });
