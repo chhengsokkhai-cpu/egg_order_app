@@ -163,6 +163,34 @@ app.patch('/api/admin/orders/:orderId', (req, res) => {
     });
 });
 
+// Test endpoint to send message to Telegram group
+app.post('/api/test-telegram', async (req, res) => {
+    try {
+        const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+        const adminChatId = '-3104390285';
+        
+        const testMessage = `🧪 TEST MESSAGE\n\nThis is a test to verify Telegram bot can send to group.\nTime: ${new Date().toISOString()}`;
+        
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: adminChatId,
+                text: testMessage
+            })
+        });
+        
+        if (response.ok) {
+            res.json({ success: true, message: 'Test message sent to Telegram group' });
+        } else {
+            const errorData = await response.json();
+            res.status(500).json({ success: false, error: errorData });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.json({
