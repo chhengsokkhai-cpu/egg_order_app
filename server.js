@@ -270,7 +270,7 @@ async function notifyTelegramBot(order) {
         }
         
         // Also send confirmation to customer
-        const customerMessage = `✅ Your order has been placed!\n\nOrder ID: ${order.id}\nTotal: ${order.total}\n\nWe'll notify you when it's ready.`;
+        const customerMessage = `✅ Your order has been placed!\n\nOrder ID: ${order.id}\n\nWe'll notify you when it's ready.`;
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
