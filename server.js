@@ -215,16 +215,30 @@ app.post('/webhook/telegram', async (req, res) => {
             
             if (action === 'accept') {
                 order.status = 'accepted';
-                // Edit the message to show accepted
+                // Edit the message to show accepted with only accept button
                 await editMessageText(message.chat.id, message.message_id, 
-                    `✅ ORDER ACCEPTED\n\n${message.text.replace('⏳ PENDING APPROVAL', '✅ ACCEPTED')}`);
+                    `✅ ORDER ACCEPTED\n\n${message.text.replace('⏳ PENDING APPROVAL', '✅ ACCEPTED')}`,
+                    {
+                        inline_keyboard: [
+                            [
+                                { text: '✅ Order Accepted', callback_data: 'accepted' }
+                            ]
+                        ]
+                    });
                 // Notify customer
                 await sendMessage(order.user.id, `✅ Your order ${orderId} has been accepted! We'll prepare it soon.`);
             } else if (action === 'deny') {
                 order.status = 'denied';
-                // Edit the message to show denied
+                // Edit the message to show denied with only deny button
                 await editMessageText(message.chat.id, message.message_id, 
-                    `❌ ORDER DENIED\n\n${message.text.replace('⏳ PENDING APPROVAL', '❌ DENIED')}`);
+                    `❌ ORDER DENIED\n\n${message.text.replace('⏳ PENDING APPROVAL', '❌ DENIED')}`,
+                    {
+                        inline_keyboard: [
+                            [
+                                { text: '❌ Order Denied', callback_data: 'denied' }
+                            ]
+                        ]
+                    });
                 // Notify customer
                 await sendMessage(order.user.id, `❌ Sorry, your order ${orderId} could not be accepted at this time.`);
             }
@@ -252,16 +266,20 @@ async function answerCallbackQuery(callbackQueryId, text) {
     });
 }
 
-async function editMessageText(chatId, messageId, text) {
+async function editMessageText(chatId, messageId, text, replyMarkup = null) {
     const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    const payload = {
+        chat_id: chatId,
+        message_id: messageId,
+        text: text
+    };
+    if (replyMarkup) {
+        payload.reply_markup = replyMarkup;
+    }
     await fetch(`https://api.telegram.org/bot${botToken}/editMessageText`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: chatId,
-            message_id: messageId,
-            text: text
-        })
+        body: JSON.stringify(payload)
     });
 }
 
@@ -358,10 +376,14 @@ async function notifyTelegramBot(order) {
             const errorData = await response.json();
             console.error('Failed to send Telegram notification to admin:', errorData);
         }
-        
-        // Also send confirmation to customer
+    } catch (adminError) {
+        console.error('Error sending admin notification:', adminError);
+    }
+    
+    // Always try to send confirmation to customer (independent of admin notification)
+    try {
         const customerMessage = `✅ Your order has been placed!\n\nOrder ID: ${order.id}\n\nWe'll notify you when it's ready.`;
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        const customerResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -369,6 +391,16 @@ async function notifyTelegramBot(order) {
                 text: customerMessage
             })
         });
+        
+        if (customerResponse.ok) {
+            console.log('Customer confirmation sent successfully');
+        } else {
+            const customerError = await customerResponse.json();
+            console.error('Failed to send customer confirmation:', customerError);
+        }
+    } catch (customerError) {
+        console.error('Error sending customer confirmation:', customerError);
+    }
         
     } catch (error) {
         console.error('Error sending Telegram notification:', error);
