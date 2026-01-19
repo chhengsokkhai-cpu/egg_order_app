@@ -74,9 +74,7 @@ app.post('/api/orders', (req, res) => {
         // 4. Update inventory
         
         // Send notification to Telegram bot
-        setTimeout(() => {
-            notifyTelegramBot(order);
-        }, 100);
+        notifyTelegramBot(order);
         
         res.json({
             success: true,
