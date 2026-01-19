@@ -5,11 +5,6 @@
     box-sizing: border-box;
 }
 
-html {
-    height: 100%;
-    width: 100%;
-}
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--tg-theme-bg-color, #ffffff);
@@ -17,18 +12,11 @@ body {
     line-height: 1.4;
     -webkit-user-select: none;
     user-select: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
 }
 
 .container {
-    width: 100%;
-    margin: 0;
+    max-width: 480px;
+    margin: 0 auto;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -131,11 +119,6 @@ main {
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    user-select: none;
 }
 
 .btn-quantity:hover {
@@ -190,8 +173,8 @@ footer {
 }
 
 .cart-summary {
-    width: 100%;
-    margin: 0;
+    max-width: 480px;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
