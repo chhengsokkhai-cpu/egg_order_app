@@ -11,52 +11,6 @@ const products = {
 // Cart state
 let cart = {};
 
-// Update quantity of a product - MOVED TO TOP FOR ONCLICK HANDLERS
-function updateQuantity(productId, change) {
-    try {
-        console.log('updateQuantity called:', productId, change);
-        
-        if (!cart[productId]) {
-            cart[productId] = 0;
-        }
-        
-        cart[productId] += change;
-        
-        // Don't allow negative quantities
-        if (cart[productId] < 0) {
-            cart[productId] = 0;
-        }
-        
-        // Remove from cart if quantity is 0
-        if (cart[productId] === 0) {
-            delete cart[productId];
-        }
-        
-        console.log('Cart after update:', cart);
-        
-        // Update the display
-        updateQuantityDisplay(productId);
-        updateCartDisplay();
-        
-        // Add animation
-        animateQuantityChange(productId);
-        
-        // Haptic feedback
-        if (tg && tg.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('light');
-        }
-    } catch (error) {
-        console.error('Error in updateQuantity:', error);
-        alert('Error updating quantity: ' + error.message);
-    }
-}
-
-// Checkout function - MOVED TO TOP FOR ONCLICK HANDLERS
-function checkout() {
-    console.log('Checkout called');
-    alert('Checkout function called! Cart: ' + JSON.stringify(cart));
-    // Rest of checkout logic will be added after testing
-}
 
 // Update quantity display for a specific product
 function updateQuantityDisplay(productId) {
@@ -77,32 +31,12 @@ function animateQuantityChange(productId) {
     }
 }
 
-// Make functions globally available
-window.updateQuantity = updateQuantity;
-window.checkout = checkout;
-
 // Telegram Web App initialization
 let tg = window.Telegram?.WebApp || {
     HapticFeedback: { impactOccurred: () => {} },
     showAlert: alert,
     initDataUnsafe: { user: { id: 'test', username: 'test' } }
 };
-
-// Initialize the app when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded, initializing...');
-    updateCartDisplay();
-    
-    // Test that functions are available
-    console.log('updateQuantity function:', typeof updateQuantity);
-    console.log('checkout function:', typeof checkout);
-    
-    // Initialize Telegram Web App if available
-    if (window.Telegram?.WebApp) {
-        tg.ready();
-        tg.expand();
-    }
-});
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
@@ -221,7 +155,7 @@ function updateQuantity(productId, change) {
         animateQuantityChange(productId);
         
         // Haptic feedback
-        if (tg.HapticFeedback) {
+        if (tg && tg.HapticFeedback) {
             tg.HapticFeedback.impactOccurred('light');
         }
     } catch (error) {
@@ -336,6 +270,10 @@ function checkout() {
         tg.showAlert('Network error. Please check your connection and try again.');
     });
 }
+
+// Make functions globally available for inline onclick handlers
+window.updateQuantity = updateQuantity;
+window.checkout = checkout;
 
 // Update all quantity displays
 function updateAllQuantityDisplays() {

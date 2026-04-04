@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSP Mini App</title>
+    <title>កម្មវិធីកុម្ម៉ង់ពងមាន់</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,95 +12,102 @@
         <header>
             <h1>🥚ឆាយ សុខពៅ </h1>
             <p>ពងមាន់ខ្មែរចេញពីកសិដ្ឋានផ្ទាល់</p>
+            <small class="usage-hint">ចុច + ដើម្បីបន្ថែម និងចុច - ដើម្បីដកពីកន្ត្រក</small>
         </header>
-
         <main>
             <div class="products-grid">
-                <div class="product-card" data-product="white-eggs">
+                <div class="product-card" data-product="a10">
                     <div class="product-image">🥚</div>
-                    <h3>លេខ ០</h3>
-                    <p>មួយគ្រាប់</p>
-                    <div class="price">400</div>
-                    <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('a10', -1)">-</button>
-                        <span class="quantity" id="a10">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('a10', 1)">+</button>
+                    <div class="content">
+                        <h3>លេខ ០</h3>
+                        <p>មួយគ្រាប់</p>
+                        <div class="price">400៛</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="btn-quantity" aria-label="ដក លេខ ០" onclick="updateQuantity('a10', -1)">-</button>
+                            <span class="quantity" id="a10">0</span>
+                            <button type="button" class="btn-quantity" aria-label="បន្ថែម លេខ ០" onclick="updateQuantity('a10', 1)">+</button>
+                        </div>
                     </div>
                 </div>
-            <div class="products-grid">
-                <div class="product-card" data-product="white-eggs">
+                <div class="product-card" data-product="a11">
                     <div class="product-image">🥚</div>
-                    <h3>លេខ ១</h3>
-                    <p>មួយគ្រាប់</p>
-                    <div class="price">360</div>
-                    <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('a11', -1)">-</button>
-                        <span class="quantity" id="a11">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('a11', 1)">+</button>
+                    <div class="content">
+                        <h3>លេខ ១</h3>
+                        <p>មួយគ្រាប់</p>
+                        <div class="price">360៛</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="btn-quantity" aria-label="ដក លេខ ១" onclick="updateQuantity('a11', -1)">-</button>
+                            <span class="quantity" id="a11">0</span>
+                            <button type="button" class="btn-quantity" aria-label="បន្ថែម លេខ ១" onclick="updateQuantity('a11', 1)">+</button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="product-card" data-product="brown-eggs">
+                <div class="product-card" data-product="a12">
                     <div class="product-image">🥚</div>
-                    <h3>លេខ ២</h3>
-                    <p>មួយគ្រាប់</p>
-                    <div class="price">340</div>
-                    <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('a12', -1)">-</button>
-                        <span class="quantity" id="a12">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('a12', 1)">+</button>
+                    <div class="content">
+                        <h3>លេខ ២</h3>
+                        <p>មួយគ្រាប់</p>
+                        <div class="price">340៛</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="btn-quantity" aria-label="ដក លេខ ២" onclick="updateQuantity('a12', -1)">-</button>
+                            <span class="quantity" id="a12">0</span>
+                            <button type="button" class="btn-quantity" aria-label="បន្ថែម លេខ ២" onclick="updateQuantity('a12', 1)">+</button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="product-card" data-product="duck-eggs">
+                <div class="product-card" data-product="a13">
                     <div class="product-image">🥚</div>
-                    <h3>លេខ ៣</h3>
-                    <p>មួយគ្រាប់</p>
-                    <div class="price">320</div>
-                    <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('a13', -1)">-</button>
-                        <span class="quantity" id="a13">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('a13', 1)">+</button>
+                    <div class="content">
+                        <h3>លេខ ៣</h3>
+                        <p>មួយគ្រាប់</p>
+                        <div class="price">320៛</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="btn-quantity" aria-label="ដក លេខ ៣" onclick="updateQuantity('a13', -1)">-</button>
+                            <span class="quantity" id="a13">0</span>
+                            <button type="button" class="btn-quantity" aria-label="បន្ថែម លេខ ៣" onclick="updateQuantity('a13', 1)">+</button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="product-card" data-product="quail-eggs">
+                <div class="product-card" data-product="a14">
                     <div class="product-image">🥚</div>
-                    <h3>លេខ ៤</h3>
-                    <p>មួយគ្រាប់</p>
-                    <div class="price">300</div>
-                    <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('a14', -1)">-</button>
-                        <span class="quantity" id="a14">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('a14', 1)">+</button>
+                    <div class="content">
+                        <h3>លេខ ៤</h3>
+                        <p>មួយគ្រាប់</p>
+                        <div class="price">300៛</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="btn-quantity" aria-label="ដក លេខ ៤" onclick="updateQuantity('a14', -1)">-</button>
+                            <span class="quantity" id="a14">0</span>
+                            <button type="button" class="btn-quantity" aria-label="បន្ថែម លេខ ៤" onclick="updateQuantity('a14', 1)">+</button>
+                        </div>
                     </div>
                 </div>
-
-                 <div class="product-card" data-product="quail-eggs">
+                <div class="product-card" data-product="a15">
                     <div class="product-image">🥚</div>
-                    <h3>លេខ ៥</h3>
-                    <p>មួយគ្រាប់</p>
-                    <div class="price">280</div>
-                    <div class="quantity-controls">
-                        <button class="btn-quantity" onclick="updateQuantity('a15', -1)">-</button>
-                        <span class="quantity" id="a15">0</span>
-                        <button class="btn-quantity" onclick="updateQuantity('a15', 1)">+</button>
+                    <div class="content">
+                        <h3>លេខ ៥</h3>
+                        <p>មួយគ្រាប់</p>
+                        <div class="price">280៛</div>
+                        <div class="quantity-controls">
+                            <button type="button" class="btn-quantity" aria-label="ដក លេខ ៥" onclick="updateQuantity('a15', -1)">-</button>
+                            <span class="quantity" id="a15">0</span>
+                            <button type="button" class="btn-quantity" aria-label="បន្ថែម លេខ ៥" onclick="updateQuantity('a15', 1)">+</button>
+                        </div>
                     </div>
+                </div>
             </div>
         </main>
-
         <footer>
             <div class="cart-summary">
                 <div class="cart-info">
-                    <span class="cart-count">0 items</span>
+                    <span class="cart-count">0 មុខទំនិញ</span>
+                    <span class="cart-total">0៛</span>
                 </div>
-                <button id="checkout-btn" class="checkout-btn" onclick="checkout()" disabled>
-                    Order
+                <button type="button" id="checkout-btn" class="checkout-btn" onclick="checkout()" disabled>
+                    កុម្ម៉ង់
                 </button>
             </div>
         </footer>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>

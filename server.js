@@ -11,20 +11,18 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files from public directory
+// Serve static files from public directory (CSS, JS, images, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // In-memory storage for orders (use a database in production)
 let orders = [];
 let orderIdCounter = 1000;
 
-// Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// Small helper for retry backoff
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // API endpoint for placing orders
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
     try {
         const orderData = req.body;
         
@@ -73,8 +71,12 @@ app.post('/api/orders', (req, res) => {
         // 3. Send confirmation email/SMS
         // 4. Update inventory
         
-        // Send notification to Telegram bot
-        notifyTelegramBot(order);
+        // Send notification to Telegram bot (await to avoid serverless exit before send)
+        try {
+            await notifyTelegramBot(order);
+        } catch (notifyErr) {
+            console.error('Failed to notify Telegram bot:', notifyErr);
+        }
         
         res.json({
             success: true,
@@ -199,61 +201,135 @@ app.post('/webhook/telegram', async (req, res) => {
     try {
         const update = req.body;
         
+        console.log('Webhook received:', JSON.stringify(update, null, 2));
+        
+        // Handle callback queries (button clicks)
         if (update.callback_query) {
             const callbackQuery = update.callback_query;
             const data = callbackQuery.data;
             const message = callbackQuery.message;
+            const callbackQueryId = callbackQuery.id;
             
             // Parse the callback data (format: "action:orderId")
             const [action, orderId] = data.split(':');
             
+            // Find the order
             const order = orders.find(o => o.id === orderId);
+            
             if (!order) {
-                await answerCallbackQuery(callbackQuery.id, 'Order not found');
+                await answerCallbackQuery(callbackQueryId, 'Order not found');
+                return res.sendStatus(200);
+            }
+            
+            // Check if order was already processed
+            if (order.status !== 'pending') {
+                await answerCallbackQuery(callbackQueryId, `Order already ${order.status}`);
                 return res.sendStatus(200);
             }
             
             if (action === 'accept') {
+                // Update order status
                 order.status = 'accepted';
-                // Edit the message to show accepted with only accept button
-                await editMessageText(message.chat.id, message.message_id, 
-                    `✅ ORDER ACCEPTED\n\n${message.text.replace('⏳ PENDING APPROVAL', '✅ ACCEPTED')}`,
+                
+                // Answer the callback query
+                await answerCallbackQuery(callbackQueryId, 'Order accepted');
+                
+                // Update the admin message
+                const orderItems = order.items.map(item => 
+                    `• ${item.quantity}x ${item.name} - ${item.total}`
+                ).join('\n');
+                
+                const updatedMessage = `🥚 ORDER ACCEPTED ✅\n\n` +
+                    `Order ID: ${order.id}\n` +
+                    `Customer: ${order.user.username || order.user.first_name || 'Anonymous'}\n` +
+                    `User ID: ${order.user.id}\n\n` +
+                    `Items:\n${orderItems}\n\n` +
+                    `⏰ Time: ${new Date(order.timestamp).toLocaleString()}\n` +
+                    `✅ Status: ACCEPTED`;
+                
+                await editMessageText(
+                    message.chat.id,
+                    message.message_id,
+                    updatedMessage,
                     {
                         inline_keyboard: [
                             [
                                 { text: '✅ Order Accepted', callback_data: 'accepted' }
                             ]
                         ]
-                    });
-                // Notify customer
-                await sendMessage(order.user.id, `✅ Your order ${orderId} has been accepted! We'll prepare it soon.`);
+                    }
+                );
+                
+                // Send notification to customer
+                const customerMessage = `✅ Your order has been accepted!\n\n` +
+                    `Order ID: ${order.id}\n` +
+                    `Total: ${order.total}៛\n\n` +
+                    `We're preparing your order now. You'll be notified when it's ready!`;
+                
+                await sendMessage(order.user.id, customerMessage);
+                
+                console.log(`Order ${orderId} accepted by admin`);
+                
             } else if (action === 'deny') {
+                // Update order status
                 order.status = 'denied';
-                // Edit the message to show denied with only deny button
-                await editMessageText(message.chat.id, message.message_id, 
-                    `❌ ORDER DENIED\n\n${message.text.replace('⏳ PENDING APPROVAL', '❌ DENIED')}`,
+                
+                // Answer the callback query
+                await answerCallbackQuery(callbackQueryId, 'Order denied');
+                
+                // Update the admin message
+                const orderItems = order.items.map(item => 
+                    `• ${item.quantity}x ${item.name} - ${item.total}`
+                ).join('\n');
+                
+                const updatedMessage = `❌ ORDER DENIED\n\n` +
+                    `Order ID: ${order.id}\n` +
+                    `Customer: ${order.user.username || order.user.first_name || 'Anonymous'}\n` +
+                    `User ID: ${order.user.id}\n\n` +
+                    `Items:\n${orderItems}\n\n` +
+                    `⏰ Time: ${new Date(order.timestamp).toLocaleString()}\n` +
+                    `❌ Status: DENIED`;
+                
+                await editMessageText(
+                    message.chat.id,
+                    message.message_id,
+                    updatedMessage,
                     {
                         inline_keyboard: [
                             [
                                 { text: '❌ Order Denied', callback_data: 'denied' }
                             ]
                         ]
-                    });
-                // Notify customer
-                await sendMessage(order.user.id, `❌ Sorry, your order ${orderId} could not be accepted at this time.`);
+                    }
+                );
+                
+                // Send notification to customer
+                const customerMessage = `❌ Sorry, your order could not be accepted at this time.\n\n` +
+                    `Order ID: ${order.id}\n` +
+                    `Total: ${order.total}៛\n\n` +
+                    `Please try again later or contact us for assistance.`;
+                
+                await sendMessage(order.user.id, customerMessage);
+                
+                console.log(`Order ${orderId} denied by admin`);
+            } else {
+                console.log(`Unknown action: ${action} for order: ${orderId}`);
+                await answerCallbackQuery(callbackQueryId, 'Unknown action');
             }
-            
-            await answerCallbackQuery(callbackQuery.id, `${action === 'accept' ? 'Accepted' : 'Denied'} successfully`);
+        } else {
+            console.log('Webhook received but no callback_query found. Update type:', update.message ? 'message' : 'unknown');
         }
         
+        // Always return 200 to acknowledge receipt (Telegram requires this)
         res.sendStatus(200);
     } catch (error) {
         console.error('Webhook error:', error);
-        res.sendStatus(500);
+        console.error('Error stack:', error.stack);
+        // Still return 200 to prevent Telegram from retrying excessively
+        res.sendStatus(200);
     }
 });
 
-// Helper functions for Telegram API
 async function answerCallbackQuery(callbackQueryId, text) {
     const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
     await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
@@ -318,6 +394,40 @@ app.get('/api/get-chat-id', async (req, res) => {
     }
 });
 
+// Endpoint to setup webhook manually
+app.post('/api/setup-webhook', async (req, res) => {
+    try {
+        await setupWebhook();
+        res.json({ success: true, message: 'Webhook setup initiated' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Endpoint to check webhook status
+app.get('/api/webhook-status', async (req, res) => {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
+        const data = await response.json();
+        res.json({ success: true, webhookInfo: data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Endpoint to check webhook status
+app.get('/api/webhook-status', async (req, res) => {
+    const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/getWebhookInfo`);
+        const data = await response.json();
+        res.json({ success: true, webhookInfo: data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -327,18 +437,24 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'Endpoint not found'
-    });
+// Fallback to index.html for client-side routing (SPA)
+app.get('*', (req, res) => {
+    // Return 404 JSON for API routes that don't exist
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({
+            success: false,
+            error: 'API endpoint not found'
+        });
+    }
+    // Serve index.html for all other routes (SPA routing)
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Function to notify Telegram bot
 async function notifyTelegramBot(order) {
     const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
     const adminChatId = '-1003516638177'; // Replace with your group chat ID (negative number for groups)
+    const maxAttempts = 3;
     
     const orderItems = order.items.map(item => 
         `• ${item.quantity}x ${item.name} - ${item.total}`
@@ -351,66 +467,77 @@ async function notifyTelegramBot(order) {
         `Items:\n${orderItems}\n\n` +
         `⏰ Time: ${new Date(order.timestamp).toLocaleString()}`;
     
-    try {
-        // Send to admin group with inline keyboard
-        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: adminChatId,
-                text: message,
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '✅ Accept', callback_data: `accept:${order.id}` },
-                            { text: '❌ Deny', callback_data: `deny:${order.id}` }
+    // Send to admin group with retry
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: adminChatId,
+                    text: message,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '✅ Accept', callback_data: `accept:${order.id}` },
+                                { text: '❌ Deny', callback_data: `deny:${order.id}` }
+                            ]
                         ]
-                    ]
-                }
-            })
-        });
-        
-        if (response.ok) {
-            console.log('Telegram notification sent to admin group successfully');
-        } else {
-            const errorData = await response.json();
-            console.error('Failed to send Telegram notification to admin:', errorData);
+                    }
+                })
+            });
+
+            const body = await response.json();
+            if (response.ok) {
+                console.log('Telegram notification sent to admin group successfully');
+                break;
+            } else {
+                console.error(`Admin notification failed (attempt ${attempt}/${maxAttempts}):`, body);
+            }
+        } catch (adminError) {
+            console.error(`Error sending admin notification (attempt ${attempt}/${maxAttempts}):`, adminError);
         }
-    } catch (adminError) {
-        console.error('Error sending admin notification:', adminError);
+
+        if (attempt < maxAttempts) {
+            await sleep(300 * attempt); // simple backoff
+        }
     }
     
-    // Always try to send confirmation to customer (independent of admin notification)
-    try {
-        const customerMessage = `✅ Your order has been placed!\n\nOrder ID: ${order.id}\n\nWe'll notify you when it's ready.`;
-        const customerResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: order.user.id,
-                text: customerMessage
-            })
-        });
-        
-        if (customerResponse.ok) {
-            console.log('Customer confirmation sent successfully');
-        } else {
-            const customerError = await customerResponse.json();
-            console.error('Failed to send customer confirmation:', customerError);
+    // Always try to send confirmation to customer (independent of admin notification) with retry
+    const customerMessage = `✅ Your order has been placed!\n\nOrder ID: ${order.id}\n\nWe'll notify you when it's ready.`;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            const customerResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: order.user.id,
+                    text: customerMessage
+                })
+            });
+
+            const body = await customerResponse.json();
+            if (customerResponse.ok) {
+                console.log('Customer confirmation sent successfully');
+                break;
+            } else {
+                console.error(`Customer confirmation failed (attempt ${attempt}/${maxAttempts}):`, body);
+            }
+        } catch (customerError) {
+            console.error(`Error sending customer confirmation (attempt ${attempt}/${maxAttempts}):`, customerError);
         }
-    } catch (customerError) {
-        console.error('Error sending customer confirmation:', customerError);
-    }
-        
-    } catch (error) {
-        console.error('Error sending Telegram notification:', error);
+
+        if (attempt < maxAttempts) {
+            await sleep(300 * attempt);
+        }
     }
 }
 
 // Setup Telegram webhook
 async function setupWebhook() {
     const botToken = '8519893530:AAGkMfSAlM9z_7ABTllGdGCqpgqV1sI3bC4';
-    const webhookUrl = `https://telegram-egg-ordering-mini-app.vercel.app/webhook/telegram`;
+    // Use environment variable for webhook URL, fallback to production URL
+    const webhookUrl = process.env.WEBHOOK_URL || `https://telegram-egg-ordering-mini-app.vercel.app/webhook/telegram`;
     
     try {
         const response = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
@@ -423,20 +550,30 @@ async function setupWebhook() {
         
         const result = await response.json();
         console.log('Webhook setup result:', result);
+        if (result.ok) {
+            console.log(`✅ Webhook configured: ${webhookUrl}`);
+        } else {
+            console.error('❌ Webhook setup failed:', result.description);
+        }
     } catch (error) {
         console.error('Error setting up webhook:', error);
     }
 }
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
-    const localIP = '192.168.1.11'; // Your local IP address
-    console.log(`🥚 Egg Ordering Mini App Server running on port ${PORT}`);
-    console.log(`📱 Access the app locally: http://localhost:${PORT}`);
-    console.log(`🌐 Access from other devices: http://${localIP}:${PORT}`);
-    console.log(`🔧 Admin orders: http://${localIP}:${PORT}/api/admin/orders`);
-    console.log(`❤️  Health check: http://${localIP}:${PORT}/health`);
-    
-    // Setup Telegram webhook
-    setupWebhook();
-});
+// Export the app for Vercel serverless functions
+module.exports = app;
+
+// Only start the server if running locally (not on Vercel)
+if (require.main === module) {
+    app.listen(PORT, '0.0.0.0', () => {
+        const localIP = '192.168.1.11'; // Your local IP address
+        console.log(`🥚 Egg Ordering Mini App Server running on port ${PORT}`);
+        console.log(`📱 Access the app locally: http://localhost:${PORT}`);
+        console.log(`🌐 Access from other devices: http://${localIP}:${PORT}`);
+        console.log(`🔧 Admin orders: http://${localIP}:${PORT}/api/admin/orders`);
+        console.log(`❤️  Health check: http://${localIP}:${PORT}/health`);
+        
+        // Setup Telegram webhook (only in local development)
+        setupWebhook();
+    });
+}

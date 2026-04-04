@@ -41,6 +41,13 @@ header p {
     opacity: 0.9;
 }
 
+.usage-hint {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
 /* Main content */
 main {
     flex: 1;
@@ -106,13 +113,13 @@ main {
 }
 
 .btn-quantity {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border: 1px solid var(--tg-theme-button-color, #007aff);
     background: transparent;
     color: var(--tg-theme-button-color, #007aff);
     border-radius: 50%;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
     display: flex;
     align-items: center;

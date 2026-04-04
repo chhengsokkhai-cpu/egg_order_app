@@ -1,6 +1,6 @@
 // Product data
 const products = {
-    'a10': { name: 'លេខ 0', price: 400 },
+    'a10': { name: 'លេខ ០', price: 400 },
     'a11': { name: 'លេខ ១', price: 360 },
     'a12': { name: 'លេខ ២', price: 340 },
     'a13': { name: 'លេខ ៣', price: 320 },
@@ -10,101 +10,10 @@ const products = {
 
 // Cart state
 let cart = {};
-
-// Update quantity of a product - MOVED TO TOP FOR ONCLICK HANDLERS
-function updateQuantity(productId, change) {
-    try {
-        console.log('updateQuantity called:', productId, change);
-        
-        if (!cart[productId]) {
-            cart[productId] = 0;
-        }
-        
-        cart[productId] += change;
-        
-        // Don't allow negative quantities
-        if (cart[productId] < 0) {
-            cart[productId] = 0;
-        }
-        
-        // Remove from cart if quantity is 0
-        if (cart[productId] === 0) {
-            delete cart[productId];
-        }
-        
-        console.log('Cart after update:', cart);
-        
-        // Update the display
-        updateQuantityDisplay(productId);
-        updateCartDisplay();
-        
-        // Add animation
-        animateQuantityChange(productId);
-        
-        // Haptic feedback
-        if (tg && tg.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('light');
-        }
-    } catch (error) {
-        console.error('Error in updateQuantity:', error);
-        alert('Error updating quantity: ' + error.message);
-    }
+function formatCurrency(amount) {
+    return `${amount}៛`;
 }
 
-// Checkout function - MOVED TO TOP FOR ONCLICK HANDLERS
-function checkout() {
-    console.log('Checkout called');
-    
-    if (Object.keys(cart).length === 0) {
-        tg.showAlert('Your cart is empty!');
-        return;
-    }
-    
-    // Prepare order data
-    const items = Object.entries(cart).map(([productId, quantity]) => ({
-        name: products[productId].name,
-        quantity: quantity,
-        total: products[productId].price * quantity
-    }));
-    
-    const total = items.reduce((sum, item) => sum + item.total, 0);
-    
-    const orderData = {
-        items: items,
-        total: total,
-        user: tg.initDataUnsafe?.user || { id: 'test', username: 'test' }
-    };
-    
-    console.log('Sending order:', orderData);
-    
-    // Send order to server
-    fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(orderData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            tg.showAlert(`Order placed successfully! Order ID: ${data.orderId}`);
-            // Clear cart
-            cart = {};
-            updateCartDisplay();
-            // Reset quantities
-            Object.keys(products).forEach(productId => {
-                updateQuantityDisplay(productId);
-            });
-        } else {
-            tg.showAlert('Failed to place order: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error placing order:', error);
-        tg.showAlert('Error placing order. Please try again.');
-    });
-}
 
 // Update quantity display for a specific product
 function updateQuantityDisplay(productId) {
@@ -125,32 +34,12 @@ function animateQuantityChange(productId) {
     }
 }
 
-// Make functions globally available
-window.updateQuantity = updateQuantity;
-window.checkout = checkout;
-
 // Telegram Web App initialization
 let tg = window.Telegram?.WebApp || {
     HapticFeedback: { impactOccurred: () => {} },
     showAlert: alert,
     initDataUnsafe: { user: { id: 'test', username: 'test' } }
 };
-
-// Initialize the app when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Page loaded, initializing...');
-    updateCartDisplay();
-    
-    // Test that functions are available
-    console.log('updateQuantity function:', typeof updateQuantity);
-    console.log('checkout function:', typeof checkout);
-    
-    // Initialize Telegram Web App if available
-    if (window.Telegram?.WebApp) {
-        tg.ready();
-        tg.expand();
-    }
-});
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
@@ -164,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tg.expand();
     
     // Show the main button when cart has items
-    tg.MainButton.setText('Order');
+    tg.MainButton.setText('កុម្ម៉ង់');
     tg.MainButton.hide();
     
     // Handle main button click
@@ -183,45 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Setup quantity buttons with event listeners
 function setupQuantityButtons() {
-    console.log('Setting up quantity buttons');
-    
-    // Get all quantity buttons
-    const quantityButtons = document.querySelectorAll('.btn-quantity');
-    
-    quantityButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log('Button clicked:', this);
-            
-            // Add visual feedback
-            this.classList.add('clicked');
-            setTimeout(() => {
-                this.classList.remove('clicked');
-            }, 200);
-            
-            // Get product ID and change from data attributes
-            const productId = this.getAttribute('data-product');
-            const change = parseInt(this.getAttribute('data-change'));
-            
-            console.log('Data attributes:', productId, change);
-            
-            if (productId && !isNaN(change)) {
-                updateQuantity(productId, change);
-            } else {
-                console.error('Missing or invalid data attributes');
-            }
-        });
-    });
-    
-    // Also setup checkout button
-    const checkoutBtn = document.getElementById('checkout-btn');
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', checkout);
-    }
-    
-    console.log('Found', quantityButtons.length, 'quantity buttons');
+    console.log('Using inline handlers for quantity buttons');
 }
 
 // Set theme based on Telegram's theme
@@ -274,7 +125,7 @@ function updateQuantity(productId, change) {
         }
     } catch (error) {
         console.error('Error in updateQuantity:', error);
-        alert('Error updating quantity: ' + error.message);
+        alert('មានបញ្ហាក្នុងការកែចំនួន: ' + error.message);
     }
 }
 
@@ -291,11 +142,11 @@ function updateCartDisplay() {
     const checkoutBtn = document.getElementById('checkout-btn');
     
     if (cartCountElement) {
-        cartCountElement.textContent = `${cartCount} item${cartCount !== 1 ? 's' : ''}`;
+        cartCountElement.textContent = `${cartCount} មុខទំនិញ`;
     }
     
     if (cartTotalElement) {
-        cartTotalElement.textContent = `${cartTotal}`;
+        cartTotalElement.textContent = formatCurrency(cartTotal);
     }
     
     // Enable/disable checkout button
@@ -303,9 +154,11 @@ function updateCartDisplay() {
         checkoutBtn.disabled = cartCount === 0;
         
         if (cartCount > 0) {
+            checkoutBtn.textContent = `កុម្ម៉ង់ ${formatCurrency(cartTotal)}`;
             tg.MainButton.show();
-            tg.MainButton.setText(`Order`);
+            tg.MainButton.setText(`កុម្ម៉ង់ ${formatCurrency(cartTotal)}`);
         } else {
+            checkoutBtn.textContent = 'កុម្ម៉ង់';
             tg.MainButton.hide();
         }
     }
@@ -314,7 +167,7 @@ function updateCartDisplay() {
 // Checkout function
 function checkout() {
     if (Object.keys(cart).length === 0) {
-        tg.showAlert('Your cart is empty!');
+        tg.showAlert('កន្ត្រករបស់អ្នកនៅទទេ!');
         return;
     }
     
@@ -355,7 +208,7 @@ function checkout() {
         
         if (data.success) {
             // Show success message
-            tg.showAlert(`Order placed successfully! Order ID: ${data.orderId}`);
+            tg.showAlert(`កុម្ម៉ង់បានជោគជ័យ! លេខកុម្ម៉ង់៖ ${data.orderId}`);
             
             // Clear cart
             cart = {};
@@ -375,15 +228,19 @@ function checkout() {
                 total: orderData.total
             }));
         } else {
-            tg.showAlert('Failed to place order. Please try again.');
+            tg.showAlert('ការកុម្ម៉ង់បរាជ័យ។ សូមព្យាយាមម្តងទៀត។');
         }
     })
     .catch(error => {
         console.error('Error:', error);
         tg.MainButton.hideProgress();
-        tg.showAlert('Network error. Please check your connection and try again.');
+        tg.showAlert('បណ្ដាញមានបញ្ហា។ សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្តងទៀត។');
     });
 }
+
+// Make functions globally available for inline onclick handlers
+window.updateQuantity = updateQuantity;
+window.checkout = checkout;
 
 // Update all quantity displays
 function updateAllQuantityDisplays() {
@@ -409,7 +266,7 @@ tg.onEvent('viewportChanged', function() {
 // Handle back button
 tg.BackButton.onClick(function() {
     if (Object.keys(cart).length > 0) {
-        tg.showConfirm('Are you sure you want to leave? Your cart will be cleared.', function(confirmed) {
+        tg.showConfirm('តើអ្នកពិតជាចង់ចាកចេញមែនទេ? កន្ត្រករបស់អ្នកនឹងត្រូវលុប។', function(confirmed) {
             if (confirmed) {
                 cart = {};
                 updateAllQuantityDisplays();
@@ -440,11 +297,11 @@ updateCartDisplay = function() {
 
 // Error handling for network issues
 window.addEventListener('offline', function() {
-    tg.showAlert('You are offline. Please check your connection.');
+    tg.showAlert('អ្នកកំពុងក្រៅបណ្ដាញ។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក។');
 });
 
 window.addEventListener('online', function() {
-    tg.showAlert('Connection restored.');
+    tg.showAlert('ការតភ្ជាប់ត្រូវបានស្តារឡើងវិញ។');
 });
 
 // Debug mode (remove in production)

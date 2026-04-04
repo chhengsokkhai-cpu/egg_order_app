@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🥚 Egg Ordering Mini App</title>
+    <title>🥚 កម្មវិធីកុម្ម៉ង់ពងមាន់</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -110,8 +110,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>🥚 Fresh Eggs Delivery</h1>
-            <p>Order fresh eggs directly to your door!</p>
+            <h1>🥚 ដឹកជញ្ជូនពងមាន់ស្រស់</h1>
+            <p>កុម្ម៉ង់ពងមាន់ស្រស់ ដឹកដល់ផ្ទះរបស់អ្នក!</p>
         </header>
 
         <main>
@@ -119,8 +119,8 @@
                 <div class="product-card">
                     <div class="product-image">🥚</div>
                     <div style="flex: 1;">
-                        <h3>White Eggs</h3>
-                        <p>Farm fresh white eggs (12 pack)</p>
+                        <h3>ពងមាន់ស</h3>
+                        <p>ពងមាន់ស្រស់ពីកសិដ្ឋាន (១២ គ្រាប់)</p>
                         <div class="price">$4.99</div>
                         <div class="quantity-controls">
                             <button class="btn-quantity" onclick="updateQuantity('white-eggs', -1)">-</button>
@@ -133,8 +133,8 @@
                 <div class="product-card">
                     <div class="product-image">🥚</div>
                     <div style="flex: 1;">
-                        <h3>Brown Eggs</h3>
-                        <p>Organic brown eggs (12 pack)</p>
+                        <h3>ពងមាន់ត្នោត</h3>
+                        <p>ពងមាន់ត្នោតសរីរាង្គ (១២ គ្រាប់)</p>
                         <div class="price">$6.99</div>
                         <div class="quantity-controls">
                             <button class="btn-quantity" onclick="updateQuantity('brown-eggs', -1)">-</button>
@@ -147,8 +147,8 @@
                 <div class="product-card">
                     <div class="product-image">🥚</div>
                     <div style="flex: 1;">
-                        <h3>Duck Eggs</h3>
-                        <p>Premium duck eggs (6 pack)</p>
+                        <h3>ពងទា</h3>
+                        <p>ពងទាគុណភាពខ្ពស់ (៦ គ្រាប់)</p>
                         <div class="price">$8.99</div>
                         <div class="quantity-controls">
                             <button class="btn-quantity" onclick="updateQuantity('duck-eggs', -1)">-</button>
@@ -161,8 +161,8 @@
                 <div class="product-card">
                     <div class="product-image">🥚</div>
                     <div style="flex: 1;">
-                        <h3>Quail Eggs</h3>
-                        <p>Delicate quail eggs (18 pack)</p>
+                        <h3>ពងក្រួច</h3>
+                        <p>ពងក្រួចស្រស់ (១៨ គ្រាប់)</p>
                         <div class="price">$12.99</div>
                         <div class="quantity-controls">
                             <button class="btn-quantity" onclick="updateQuantity('quail-eggs', -1)">-</button>
@@ -177,28 +177,28 @@
         <footer>
             <div class="cart-summary">
                 <div class="cart-info">
-                    <span class="cart-count">0 items</span>
+                    <span class="cart-count">0 មុខទំនិញ</span>
                     <span class="cart-total">$0.00</span>
                 </div>
                 <button id="checkout-btn" class="checkout-btn" onclick="checkout()" disabled>
-                    Place Order
+                    កុម្ម៉ង់
                 </button>
             </div>
         </footer>
     </div>
 
     <div class="success-message" id="success-message">
-        🎉 Order placed successfully!<br>
-        Check your Telegram for confirmation.
+        🎉 កុម្ម៉ង់បានជោគជ័យ!<br>
+        សូមពិនិត្យតេលេក្រាមរបស់អ្នកសម្រាប់ការបញ្ជាក់។
     </div>
 
     <script>
         // Product data and cart
         const products = {
-            'white-eggs': { name: 'White Eggs', price: 4.99 },
-            'brown-eggs': { name: 'Brown Eggs', price: 6.99 },
-            'duck-eggs': { name: 'Duck Eggs', price: 8.99 },
-            'quail-eggs': { name: 'Quail Eggs', price: 12.99 }
+            'white-eggs': { name: 'ពងមាន់ស', price: 4.99 },
+            'brown-eggs': { name: 'ពងមាន់ត្នោត', price: 6.99 },
+            'duck-eggs': { name: 'ពងទា', price: 8.99 },
+            'quail-eggs': { name: 'ពងក្រួច', price: 12.99 }
         };
         let cart = {};
         
@@ -227,7 +227,7 @@
                 return sum + (products[productId].price * qty);
             }, 0);
             
-            document.querySelector('.cart-count').textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''}`;
+            document.querySelector('.cart-count').textContent = `${totalItems} មុខទំនិញ`;
             document.querySelector('.cart-total').textContent = `$${totalPrice.toFixed(2)}`;
             document.getElementById('checkout-btn').disabled = totalItems === 0;
         }
@@ -254,7 +254,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: '5953289675', // Replace with your chat ID
-                        text: `🥚 NEW ORDER!\n\nItems:\n${orderData.items.map(item => `• ${item.quantity}x ${item.name} - $${item.total.toFixed(2)}`).join('\n')}\n\n💰 Total: $${orderData.total.toFixed(2)}\n👤 User: ${orderData.user.username || orderData.user.id}`
+                        text: `🥚 កុម្ម៉ង់ថ្មី!\n\nមុខទំនិញ:\n${orderData.items.map(item => `• ${item.quantity} ដង ${item.name} - $${item.total.toFixed(2)}`).join('\n')}\n\n💰 សរុប: $${orderData.total.toFixed(2)}\n👤 អ្នកប្រើ: ${orderData.user.username || orderData.user.id}`
                     })
                 });
 
@@ -269,10 +269,10 @@
                         updateCartDisplay();
                     }, 2000);
                 } else {
-                    alert('Order failed. Please try again.');
+                    alert('ការកុម្ម៉ង់បរាជ័យ។ សូមព្យាយាមម្តងទៀត។');
                 }
             } catch (error) {
-                alert('Network error. Please check your connection.');
+                alert('បណ្ដាញមានបញ្ហា។ សូមពិនិត្យការតភ្ជាប់របស់អ្នក។');
             }
         }
 
